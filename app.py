@@ -190,25 +190,36 @@ def load_css():
 # ==========================================
 
 def render_dashboard():
-    st.markdown("<div style='float: right;'><span class='status-badge'>AI Core Online <span class='live-pulse'></span></span></div>", unsafe_allow_html=True)
+    st.markdown("""<div style='float: right;'><span class='status-badge'>AI Core Online <span class='live-pulse'></span></span></div>""", unsafe_allow_html=True)
     st.title("🚀 Command Center")
     
     status = "Optimized & Ready" if st.session_state['resume_text'] else "Awaiting Data Injection"
     words = len(st.session_state['resume_text'].split())
     job = st.session_state['target_job'] or "Target Not Locked"
 
-    # Top Metric Cards
     col1, col2, col3 = st.columns(3)
     with col1: 
-        st.markdown(f"<div class='glass-card'><div class='metric-title'>Profile Status</div><div class='metric-value' style='font-size:22px;'>{status}</div></div>", unsafe_allow_html=True)
+        st.markdown(f"""
+        <div class='glass-card'>
+            <div class='metric-title'>Profile Status</div>
+            <div class='metric-value' style='font-size:22px;'>{status}</div>
+        </div>""", unsafe_allow_html=True)
     with col2: 
-        st.markdown(f"<div class='glass-card'><div class='metric-title'>Mission Target</div><div class='metric-value' style='font-size:22px;'>{job}</div></div>", unsafe_allow_html=True)
+        st.markdown(f"""
+        <div class='glass-card'>
+            <div class='metric-title'>Mission Target</div>
+            <div class='metric-value' style='font-size:22px;'>{job}</div>
+        </div>""", unsafe_allow_html=True)
     with col3: 
-        st.markdown(f"<div class='glass-card'><div class='metric-title'>Neural Memory Loaded</div><div class='metric-value'>{words} <span style='font-size:14px; color:#94a3b8;'>tokens</span></div></div>", unsafe_allow_html=True)
+        st.markdown(f"""
+        <div class='glass-card'>
+            <div class='metric-title'>Neural Memory Loaded</div>
+            <div class='metric-value'>{words} <span style='font-size:14px; color:#94a3b8;'>tokens</span></div>
+        </div>""", unsafe_allow_html=True)
 
     d1, d2 = st.columns([0.6, 0.4])
     with d1:
-        st.markdown("<div class='glass-card'><h4><i class='fas fa-crosshairs'></i> Optimization Score</h4>", unsafe_allow_html=True)
+        st.markdown("""<div class='glass-card'><h4><i class='fas fa-crosshairs'></i> Optimization Score</h4>""", unsafe_allow_html=True)
         st.markdown("""
             <div style='padding: 20px; text-align: center;'>
                 <div style='font-size: 64px; font-weight: 800; background: -webkit-linear-gradient(45deg, #00f2fe, #4facfe); -webkit-background-clip: text; -webkit-text-fill-color: transparent;'>94%</div>
@@ -217,7 +228,7 @@ def render_dashboard():
         """, unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
     with d2:
-        st.markdown("<div class='glass-card' style='height: 93%;'><h4><i class='fas fa-terminal'></i> Terminal Logs</h4>", unsafe_allow_html=True)
+        st.markdown("""<div class='glass-card' style='height: 93%;'><h4><i class='fas fa-terminal'></i> Terminal Logs</h4>""", unsafe_allow_html=True)
         st.success("✅ **[SYS_INIT]** Gemini 1.5 Flash Connected.")
         if words > 0: 
             st.info(f"🧠 **[DATA_SYNC]** {words} words vectorized successfully.")
@@ -231,7 +242,7 @@ def render_resume_builder(ai: AIService, pdf: DocumentService):
     tab1, tab2 = st.tabs(["🛠️ Engineer Context", "✨ Final Masterpiece"])
     
     with tab1:
-        st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+        st.markdown("""<div class='glass-card'>""", unsafe_allow_html=True)
         style = st.selectbox("Design Architecture:",["Standard Corporate", "Executive & Leadership", "Creative Tech Innovator", "Startup Hustler"])
         c1, c2 = st.columns(2)
         with c1:
@@ -247,7 +258,6 @@ def render_resume_builder(ai: AIService, pdf: DocumentService):
             if name and target and raw_data:
                 st.session_state.update({'user_name': name, 'target_job': target, 'user_email': email, 'user_phone': phone})
                 
-                # Fun interactive loading sequence
                 progress_text = "Establishing neural link..."
                 my_bar = st.progress(0, text=progress_text)
                 for percent_complete in range(100):
@@ -262,7 +272,7 @@ def render_resume_builder(ai: AIService, pdf: DocumentService):
                 
                 my_bar.empty()
                 st.toast('Synthesis Complete! Check Tab 2.', icon='🔥')
-                st.balloons() # Celebreation!
+                st.balloons() 
                 
             else: st.error("⚠️ Mission aborted: Missing Required Fields (*)")
         st.markdown("</div>", unsafe_allow_html=True)
@@ -284,7 +294,7 @@ def render_letter_engine(ai: AIService, pdf: DocumentService):
 
     col1, col2 = st.columns(2)
     with col1:
-        st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+        st.markdown("""<div class='glass-card'>""", unsafe_allow_html=True)
         company = st.text_input("Target Corporation *", placeholder="e.g. SpaceX, Apple")
         hiring_manager = st.text_input("Hiring Lead (Optional)", placeholder="Who are we talking to?")
         job_desc_context = st.text_area("Job Highlights / JD:", height=100, placeholder="Paste the job requirements here...")
@@ -299,7 +309,7 @@ def render_letter_engine(ai: AIService, pdf: DocumentService):
         st.markdown("</div>", unsafe_allow_html=True)
         
     with col2:
-        st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+        st.markdown("""<div class='glass-card'>""", unsafe_allow_html=True)
         if st.session_state['cover_letter_output']:
             st.text_area("Your Cover Letter:", value=st.session_state['cover_letter_output'], height=250)
             meta = {'name': st.session_state['user_name'], 'email': st.session_state['user_email']}
@@ -313,14 +323,14 @@ def render_ats_scanner(ai: AIService):
     st.title("🔍 ATS Deep Scan")
     col_l, col_r = st.columns(2)
     with col_l:
-        st.markdown("<div class='glass-card'><h4><i class='fas fa-user-shield'></i> Your Active Profile</h4>", unsafe_allow_html=True)
+        st.markdown("""<div class='glass-card'><h4><i class='fas fa-user-shield'></i> Your Active Profile</h4>""", unsafe_allow_html=True)
         if st.session_state['resume_text']:
             st.text_area("", value=st.session_state['resume_text'][:300] + "...\n[Data Securely Loaded]", height=150, disabled=True)
         else: st.error("⚠️ No Profile Loaded.")
         st.markdown("</div>", unsafe_allow_html=True)
             
     with col_r:
-        st.markdown("<div class='glass-card'><h4><i class='fas fa-briefcase'></i> Target Job Description</h4>", unsafe_allow_html=True)
+        st.markdown("""<div class='glass-card'><h4><i class='fas fa-briefcase'></i> Target Job Description</h4>""", unsafe_allow_html=True)
         job_desc = st.text_area("", height=150, placeholder="Paste the exact job description here...")
         st.markdown("</div>", unsafe_allow_html=True)
     
@@ -338,7 +348,7 @@ def render_interview_prep(ai: AIService):
         st.warning("⚠️ Forge a resume first so the AI knows what to ask you.")
         return
 
-    st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+    st.markdown("""<div class='glass-card'>""", unsafe_allow_html=True)
     c1, c2 = st.columns(2)
     with c1: company = st.text_input("Target Company", placeholder="Where are you interviewing?")
     with c2: type_ = st.selectbox("Interrogation Level",["Behavioral (Culture Fit)", "Technical (Hard Skills)", "Executive (Final Boss)"])
@@ -376,7 +386,7 @@ def render_skill_gap_analyzer(ai: AIService):
         st.warning("⚠️ Forge your resume first so we know where your starting point is.")
         return
 
-    st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+    st.markdown("""<div class='glass-card'>""", unsafe_allow_html=True)
     dream_job = st.text_input("Your Ultimate Dream Job *", placeholder="e.g. Chief Technology Officer")
     if st.button("🗺️ PLOT COURSE"):
         if dream_job:
@@ -394,7 +404,7 @@ def render_skill_gap_analyzer(ai: AIService):
         
     data = st.session_state.get('skill_gap_data')
     if data and "missing_skills" in data:
-        st.markdown("<div class='glass-card'><h4 style='color:#00f2fe;'><i class='fas fa-exclamation-triangle'></i> Identified Skill Gaps</h4><p style='font-size: 18px;'>" + " • ".join(data['missing_skills']) + "</p></div>", unsafe_allow_html=True)
+        st.markdown("""<div class='glass-card'><h4 style='color:#00f2fe;'><i class='fas fa-exclamation-triangle'></i> Identified Skill Gaps</h4><p style='font-size: 18px;'>""" + " • ".join(data['missing_skills']) + "</p></div>", unsafe_allow_html=True)
         for week in data.get('learning_roadmap', []):
             items = "".join([f"<li style='margin-bottom: 5px;'>{item}</li>" for item in week.get('action_items', [])])
             st.markdown(f"""
@@ -422,12 +432,12 @@ def main():
     
     # ---------------- Sidebar Navigation ----------------
     with st.sidebar:
-        st.markdown(
-            "<div style='display: flex; align-items: center; gap: 15px; margin-bottom: 40px;'>"
-            "<div style='background: linear-gradient(45deg, #4facfe, #00f2fe); width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 900; color: black; font-size: 24px; box-shadow: 0 0 15px rgba(0,242,254,0.5);'>Z</div>"
-            "<div style='font-size: 26px; font-weight: 800; color: white;'>Elite Studio</div>"
-            "</div>", unsafe_allow_html=True
-        )
+        st.markdown("""
+            <div style='display: flex; align-items: center; gap: 15px; margin-bottom: 40px;'>
+                <div style='background: linear-gradient(45deg, #4facfe, #00f2fe); width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 900; color: black; font-size: 24px; box-shadow: 0 0 15px rgba(0,242,254,0.5);'>Z</div>
+                <div style='font-size: 26px; font-weight: 800; color: white;'>Elite Studio</div>
+            </div>
+        """, unsafe_allow_html=True)
         
         app_mode = st.radio("SYSTEM MODULES",[
             "📊 Command Center", 
@@ -440,4 +450,34 @@ def main():
         
         st.markdown("---")
         if st.session_state['target_job']:
-            st.markdown("<div style='color: #94a3b8; font-size: 12px; font-weight: 800; text-transform: uppercase; margin-bottom:
+            st.markdown("""
+                <div style='color: #94a3b8; font-size: 12px; font-weight: 800; text-transform: uppercase; margin-bottom: 10px;'>
+                    🌐 Quick Deploy Portals
+                </div>
+            """, unsafe_allow_html=True)
+            job = urllib.parse.quote(st.session_state['target_job'])
+            st.markdown(f"""
+                <a href='https://www.linkedin.com/jobs/search/?keywords={job}' target='_blank' class='side-job-portal' style='background: rgba(10, 102, 194, 0.2); border-color: #0a66c2;'>
+                    <i class='fab fa-linkedin' style='color: #0a66c2;'></i> LinkedIn Search ↗
+                </a>
+                <a href='https://in.indeed.com/jobs?q={job}' target='_blank' class='side-job-portal' style='background: rgba(37, 87, 167, 0.2); border-color: #2557a7;'>
+                    <i class='fas fa-info-circle' style='color: #2557a7;'></i> Indeed Search ↗
+                </a>
+            """, unsafe_allow_html=True)
+
+    # ---------------- Page Rendering Logic ----------------
+    if app_mode == "📊 Command Center":
+        render_dashboard()
+    elif app_mode == "📄 AI Resume Forge":
+        render_resume_builder(ai_service, pdf_service)
+    elif app_mode == "✉️ Smart Letter Engine":
+        render_letter_engine(ai_service, pdf_service)
+    elif app_mode == "🔍 ATS Deep Scan":
+        render_ats_scanner(ai_service)
+    elif app_mode == "🎙️ Interview Simulator":
+        render_interview_prep(ai_service)
+    elif app_mode == "🗺️ Career Roadmap":
+        render_skill_gap_analyzer(ai_service)
+
+if __name__ == "__main__":
+    main()
