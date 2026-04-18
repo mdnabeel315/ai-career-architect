@@ -148,7 +148,14 @@ def render_dashboard():
     d1, d2 = st.columns([0.65, 0.35])
     with d1:
         st.markdown("<div class='zna-card'><h4><i class='fas fa-chart-area'></i> System Analytics</h4>", unsafe_allow_html=True)
-        st.line_chart(pd.DataFrame([65, 72, 68, 85, 88, 92, 96], columns=["ATS Score Trends (%)"]), color="#3b82f6")
+        # Custom HTML UI to bypass the Python 3.14 chart bug
+        st.markdown("""
+            <div style='background: #050814; padding: 30px; border-radius: 8px; text-align: center; border: 1px solid #1e293b;'>
+                <div style='color: #3b82f6; font-size: 36px; font-weight: 900;'>94%</div>
+                <div style='color: #94a3b8; font-size: 14px; font-weight: bold; text-transform: uppercase;'>Average ATS Match Score</div>
+                <div style='color: #10b981; font-size: 12px; margin-top: 5px;'><i class='fas fa-arrow-up'></i> +12% Optimization since last scan</div>
+            </div>
+        """, unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
     with d2:
         st.markdown("<div class='zna-card'><h4><i class='fas fa-terminal'></i> Live Logs</h4>", unsafe_allow_html=True)
@@ -298,7 +305,7 @@ def render_skill_gap_analyzer(ai: AIService):
                 prompt = f"""
                 Act as a Career Coach. Resume: {st.session_state['resume_text']}. Dream Job: {dream_job}.
                 Return JSON schema:
-                {{"missing_skills": ["Skill 1"], "learning_roadmap":[{{"week_number": 1, "goal": "...", "action_items": ["..."], "milestone_project_title": "..."}}]}}
+                {{"missing_skills":["Skill 1"], "learning_roadmap":[{{"week_number": 1, "goal": "...", "action_items": ["..."], "milestone_project_title": "..."}}]}}
                 Return exactly 4 weeks.
                 """
                 st.session_state['skill_gap_data'] = ai.generate_json(prompt)
