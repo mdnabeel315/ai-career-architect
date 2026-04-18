@@ -1,23 +1,23 @@
 import os
 import re
 import json
+import time
 import logging
 import urllib.parse
 from typing import Dict, Any
 
 import pandas as pd
 import streamlit as st
-import streamlit.components.v1 as components
 import google.generativeai as genai
 from fpdf import FPDF
 from dotenv import load_dotenv
 
 # ==========================================
-# 1. APPLICATION SETUP (MUST BE AT THE VERY TOP)
+# 1. APPLICATION SETUP 
 # ==========================================
 st.set_page_config(
     page_title="ZNA Elite Studio | AI Career Architect",
-    page_icon="⚡",
+    page_icon="🚀",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -25,10 +25,9 @@ st.set_page_config(
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # ==========================================
-# 2. CORE BACKEND SERVICES (AI & PDF)
+# 2. CORE BACKEND SERVICES
 # ==========================================
 class AIService:
-    """Handles all interactions with Google's Gemini LLM."""
     def __init__(self):
         load_dotenv()
         self.api_key = os.getenv("GOOGLE_API_KEY")
@@ -58,7 +57,6 @@ class AIService:
             return {"error": str(e)}
 
 class DocumentService(FPDF):
-    """Handles professional PDF generation safely."""
     def sanitize(self, text: str) -> str:
         replacements = {'“': '"', '”': '"', '‘': "'", '’': "'", '–': '-', '—': '-'}
         for curr, new in replacements.items(): text = text.replace(curr, new)
@@ -98,7 +96,7 @@ class DocumentService(FPDF):
         return self.output(dest='S').encode('latin-1')
 
 # ==========================================
-# 3. STATE MANAGEMENT & STYLING
+# 3. STATE MANAGEMENT & PREMIUM CSS
 # ==========================================
 def init_session_state():
     defaults = {
@@ -112,161 +110,241 @@ def init_session_state():
 def load_css():
     st.markdown("""
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
         @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
-        html, body, p, div, h1, h2, h3, h4, h5, h6, label { font-family: 'Inter', sans-serif !important; }
-        .stApp { background-color: #050814; color: #f0f6fc; }
-        .stTextInput>div>div>input, .stTextArea>div>div>textarea, .stSelectbox>div>div>div { background-color: #0f1524 !important; color: #f0f6fc !important; border: 1px solid #1e293b !important; border-radius: 10px !important; }
-        .zna-card { background: linear-gradient(145deg, #0f172a 0%, #0a0f1d 100%); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); margin-bottom: 24px; transition: transform 0.3s ease; }
-        .zna-card:hover { transform: translateY(-4px); border-color: rgba(59, 130, 246, 0.3); }
-        .stButton>button { border-radius: 50px !important; background: linear-gradient(135deg, #3b82f6 0%, #4f46e5 100%) !important; color: white !important; font-weight: 600 !important; border: none !important; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3) !important; }
-        .status-badge { background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.2); color: #22c55e; padding: 6px 12px; border-radius: 50px; font-size: 10px; font-weight: 700; text-transform: uppercase; display: inline-flex; align-items: center; }
-        @keyframes pulse-green { 0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); } 70% { box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); } 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); } }
-        .live-pulse { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background-color: #22c55e; animation: pulse-green 2s infinite; margin-left: 6px; }
-        .side-job-portal { border-radius: 12px; text-align: center; padding: 14px; font-weight: 600; display: inline-block; width: 100%; margin-top: 10px; text-decoration: none; color: white !important; }
+        
+        /* Modern Font */
+        html, body, p, div, h1, h2, h3, h4, h5, h6, label { font-family: 'Outfit', sans-serif !important; }
+        
+        /* Deep Space Background */
+        .stApp { background: radial-gradient(circle at 15% 50%, #080d1e, #03050b); color: #f0f6fc; }
+        
+        /* Glassmorphism Cards */
+        .glass-card { 
+            background: rgba(15, 23, 42, 0.4); 
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08); 
+            border-radius: 20px; 
+            padding: 24px; 
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); 
+            margin-bottom: 24px; 
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+        }
+        .glass-card:hover { 
+            transform: translateY(-8px) scale(1.01); 
+            border-color: rgba(59, 130, 246, 0.5); 
+            box-shadow: 0 15px 45px 0 rgba(59, 130, 246, 0.2);
+        }
+
+        /* Neon Inputs */
+        .stTextInput>div>div>input, .stTextArea>div>div>textarea, .stSelectbox>div>div>div { 
+            background-color: rgba(255, 255, 255, 0.03) !important; 
+            color: #f0f6fc !important; 
+            border: 1px solid rgba(255, 255, 255, 0.1) !important; 
+            border-radius: 12px !important; 
+            padding: 12px !important;
+        }
+        .stTextInput>div>div>input:focus, .stTextArea>div>div>textarea:focus {
+            border-color: #00f2fe !important; 
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.3) !important;
+        }
+
+        /* Animated Gradient Buttons */
+        .stButton>button { 
+            border-radius: 50px !important; 
+            background: linear-gradient(45deg, #4facfe 0%, #00f2fe 50%, #4facfe 100%) !important; 
+            background-size: 200% auto !important;
+            color: #000 !important; 
+            font-weight: 800 !important; 
+            border: none !important; 
+            padding: 10px 24px !important;
+            box-shadow: 0 4px 15px rgba(0, 242, 254, 0.4) !important; 
+            transition: 0.5s !important; 
+        }
+        .stButton>button:hover { 
+            background-position: right center !important; 
+            transform: translateY(-3px) !important; 
+            box-shadow: 0 8px 25px rgba(0, 242, 254, 0.6) !important; 
+        }
+
+        /* Pulse Animation for Status */
+        @keyframes pulse-neon { 0% { box-shadow: 0 0 0 0 rgba(0, 242, 254, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(0, 242, 254, 0); } 100% { box-shadow: 0 0 0 0 rgba(0, 242, 254, 0); } }
+        .live-pulse { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background-color: #00f2fe; animation: pulse-neon 2s infinite; margin-left: 8px; }
+        
+        .status-badge { background: rgba(0, 242, 254, 0.1); border: 1px solid rgba(0, 242, 254, 0.3); color: #00f2fe; padding: 8px 16px; border-radius: 50px; font-size: 11px; font-weight: 800; text-transform: uppercase; display: inline-flex; align-items: center; letter-spacing: 1px;}
+        
+        /* Cool Metrics styling */
+        .metric-title { font-size: 12px; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 5px; }
+        .metric-value { font-size: 28px; font-weight: 800; background: -webkit-linear-gradient(45deg, #fff, #4facfe); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        /* Links */
+        .side-job-portal { border-radius: 12px; text-align: center; padding: 12px; font-weight: 600; display: inline-block; width: 100%; margin-top: 10px; text-decoration: none; color: white !important; transition: all 0.3s ease; border: 1px solid rgba(255,255,255,0.1); }
+        .side-job-portal:hover { transform: scale(1.05); filter: brightness(1.2); border-color: rgba(255,255,255,0.3); }
+        
     </style>
     """, unsafe_allow_html=True)
 
 # ==========================================
-# 4. FRONTEND VIEWS (THE 9 SECTIONS)
+# 4. FRONTEND VIEWS (THE FUN UI)
 # ==========================================
 
 def render_dashboard():
-    st.markdown("<div style='float: right;'><span class='status-badge'>Gemini 1.5 Flash Active <span class='live-pulse'></span></span></div>", unsafe_allow_html=True)
-    st.title("📊 Welcome to your Career Workspace")
+    st.markdown("<div style='float: right;'><span class='status-badge'>AI Core Online <span class='live-pulse'></span></span></div>", unsafe_allow_html=True)
+    st.title("🚀 Command Center")
     
-    status = "Active" if st.session_state['resume_text'] else "Awaiting Data"
-    color = "#10b981" if st.session_state['resume_text'] else "#f59e0b"
+    status = "Optimized & Ready" if st.session_state['resume_text'] else "Awaiting Data Injection"
     words = len(st.session_state['resume_text'].split())
-    job = st.session_state['target_job'] or "Not Set"
+    job = st.session_state['target_job'] or "Target Not Locked"
 
-    col1, col2, col3, col4 = st.columns(4)
-    cols_data =[("PROFILE STATUS", status, color), ("TARGET ROLE", job, "#f0f6fc"), ("WORDS IN MEMORY", str(words), "#f0f6fc"), ("API CONNECTION", "Secure", "#3b82f6")]
-    for col, (title, val, colr) in zip((col1, col2, col3, col4), cols_data):
-        with col: st.markdown(f"<div class='zna-card'><div style='font-size:12px; color:#64748b; font-weight:bold;'>{title}</div><div style='font-size:20px; font-weight:bold; margin-top:5px; color:{colr};'>{val}</div></div>", unsafe_allow_html=True)
+    # Top Metric Cards
+    col1, col2, col3 = st.columns(3)
+    with col1: 
+        st.markdown(f"<div class='glass-card'><div class='metric-title'>Profile Status</div><div class='metric-value' style='font-size:22px;'>{status}</div></div>", unsafe_allow_html=True)
+    with col2: 
+        st.markdown(f"<div class='glass-card'><div class='metric-title'>Mission Target</div><div class='metric-value' style='font-size:22px;'>{job}</div></div>", unsafe_allow_html=True)
+    with col3: 
+        st.markdown(f"<div class='glass-card'><div class='metric-title'>Neural Memory Loaded</div><div class='metric-value'>{words} <span style='font-size:14px; color:#94a3b8;'>tokens</span></div></div>", unsafe_allow_html=True)
 
-    d1, d2 = st.columns([0.65, 0.35])
+    d1, d2 = st.columns([0.6, 0.4])
     with d1:
-        st.markdown("<div class='zna-card'><h4><i class='fas fa-chart-area'></i> System Analytics</h4>", unsafe_allow_html=True)
-        # Custom HTML UI to bypass the Python 3.14 chart bug
+        st.markdown("<div class='glass-card'><h4><i class='fas fa-crosshairs'></i> Optimization Score</h4>", unsafe_allow_html=True)
         st.markdown("""
-            <div style='background: #050814; padding: 30px; border-radius: 8px; text-align: center; border: 1px solid #1e293b;'>
-                <div style='color: #3b82f6; font-size: 36px; font-weight: 900;'>94%</div>
-                <div style='color: #94a3b8; font-size: 14px; font-weight: bold; text-transform: uppercase;'>Average ATS Match Score</div>
-                <div style='color: #10b981; font-size: 12px; margin-top: 5px;'><i class='fas fa-arrow-up'></i> +12% Optimization since last scan</div>
+            <div style='padding: 20px; text-align: center;'>
+                <div style='font-size: 64px; font-weight: 800; background: -webkit-linear-gradient(45deg, #00f2fe, #4facfe); -webkit-background-clip: text; -webkit-text-fill-color: transparent;'>94%</div>
+                <div style='color: #10b981; font-size: 14px; margin-top: 5px; font-weight: 600;'><i class='fas fa-rocket'></i> Top 5% of candidates</div>
             </div>
         """, unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
     with d2:
-        st.markdown("<div class='zna-card'><h4><i class='fas fa-terminal'></i> Live Logs</h4>", unsafe_allow_html=True)
-        st.info("✅ *[SYSTEM]* LLM Engine connected.")
-        if words > 0: st.success(f"✅ *[MEMORY]* Vectorized {words} words.")
-        else: st.warning("⏳ *[MEMORY]* Awaiting user input...")
+        st.markdown("<div class='glass-card' style='height: 93%;'><h4><i class='fas fa-terminal'></i> Terminal Logs</h4>", unsafe_allow_html=True)
+        st.success("✅ **[SYS_INIT]** Gemini 1.5 Flash Connected.")
+        if words > 0: 
+            st.info(f"🧠 **[DATA_SYNC]** {words} words vectorized successfully.")
+            st.warning("⚡ **[ACTION]** Ready to deploy cover letters & mock interviews.")
+        else: 
+            st.error("⚠️ **[AWAITING_INPUT]** Go to Resume Builder to begin.")
         st.markdown("</div>", unsafe_allow_html=True)
 
 def render_resume_builder(ai: AIService, pdf: DocumentService):
-    st.title("📄 Smart Resume Builder")
-    tab1, tab2 = st.tabs(["📋 Setup & Context", "📄 Synthesis Output"])
+    st.title("⚡ AI Resume Forge")
+    tab1, tab2 = st.tabs(["🛠️ Engineer Context", "✨ Final Masterpiece"])
     
     with tab1:
-        st.markdown("<div class='zna-card'>", unsafe_allow_html=True)
-        style = st.selectbox("Template Architecture:",["Standard Corporate", "Executive & Leadership", "Creative & Tech"])
+        st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+        style = st.selectbox("Design Architecture:",["Standard Corporate", "Executive & Leadership", "Creative Tech Innovator", "Startup Hustler"])
         c1, c2 = st.columns(2)
         with c1:
-            name = st.text_input("Full Name *", value=st.session_state['user_name'])
-            email = st.text_input("Email", value=st.session_state['user_email'])
+            name = st.text_input("Agent Name *", value=st.session_state['user_name'], placeholder="John Doe")
+            email = st.text_input("Comms (Email)", value=st.session_state['user_email'])
         with c2:
-            target = st.text_input("Target Role *", value=st.session_state['target_job'])
-            phone = st.text_input("Phone Number", value=st.session_state['user_phone'])
+            target = st.text_input("Target Objective (Role) *", value=st.session_state['target_job'], placeholder="e.g. Senior UX Designer")
+            phone = st.text_input("Direct Line (Phone)", value=st.session_state['user_phone'])
             
-        raw_data = st.text_area("Raw Profile Data / Old Resume *", height=150)
+        raw_data = st.text_area("Raw Experience Data (Paste anything here) *", height=150, placeholder="Dump your old resume, LinkedIn bio, or just bullet points here. The AI will sort it out.")
         
-        if st.button("Initialize Synthesis", type="primary"):
+        if st.button("🚀 IGNITE SYNTHESIS"):
             if name and target and raw_data:
                 st.session_state.update({'user_name': name, 'target_job': target, 'user_email': email, 'user_phone': phone})
-                with st.spinner("Synthesizing optimal profile..."):
-                    prompt = f"Act as an expert Resume Writer. Style: {style}. Target Role: {target}. Raw Data: {raw_data}. RULES: Create a PROFESSIONAL SUMMARY. DO NOT write contact info at the top. Organize into UPPERCASE sections. Return ONLY plain text."
-                    st.session_state['resume_text'] = ai.generate_text(prompt)
-                    st.success("✅ Synthesis Complete! View output in Tab 2.")
-            else: st.error("⚠️ Missing Required Fields (*)")
+                
+                # Fun interactive loading sequence
+                progress_text = "Establishing neural link..."
+                my_bar = st.progress(0, text=progress_text)
+                for percent_complete in range(100):
+                    time.sleep(0.01)
+                    if percent_complete == 30: my_bar.progress(percent_complete, text="Parsing raw data blocks...")
+                    elif percent_complete == 60: my_bar.progress(percent_complete, text="Injecting ATS keywords...")
+                    elif percent_complete == 90: my_bar.progress(percent_complete, text="Polishing final draft...")
+                    else: my_bar.progress(percent_complete, text=progress_text)
+                
+                prompt = f"Act as an expert Resume Writer. Style: {style}. Target Role: {target}. Raw Data: {raw_data}. RULES: Create a PROFESSIONAL SUMMARY. DO NOT write contact info at the top. Organize into UPPERCASE sections. Return ONLY plain text."
+                st.session_state['resume_text'] = ai.generate_text(prompt)
+                
+                my_bar.empty()
+                st.toast('Synthesis Complete! Check Tab 2.', icon='🔥')
+                st.balloons() # Celebreation!
+                
+            else: st.error("⚠️ Mission aborted: Missing Required Fields (*)")
         st.markdown("</div>", unsafe_allow_html=True)
 
     with tab2:
         if st.session_state['resume_text']:
-            st.session_state['resume_text'] = st.text_area("Edit Generated Document:", value=st.session_state['resume_text'], height=450)
+            st.session_state['resume_text'] = st.text_area("Fine-tune your document:", value=st.session_state['resume_text'], height=450)
             meta = {'name': st.session_state['user_name'], 'email': st.session_state['user_email'], 'phone': st.session_state['user_phone']}
             pdf_data = pdf.build_resume(st.session_state['resume_text'], meta)
-            st.download_button("📥 Export PDF Document", data=pdf_data, file_name=f"Resume_{name.replace(' ', '_')}.pdf", mime="application/pdf", type="primary")
+            st.download_button("💾 DOWNLOAD SECURE PDF", data=pdf_data, file_name=f"Resume_{name.replace(' ', '_')}.pdf", mime="application/pdf", type="primary")
         else:
-            st.warning("👈 Provide context parameters in Tab 1 to initiate synthesis.")
+            st.info("👻 Nothing here yet. Ignite synthesis in Tab 1!")
 
 def render_letter_engine(ai: AIService, pdf: DocumentService):
-    st.title("✉️ Letter Generator")
+    st.title("✉️ Smart Letter Engine")
     if not st.session_state['resume_text']:
-        st.error("⚠️ Missing Profile Context! Synthesize a resume first.")
+        st.warning("⚠️ The AI needs to know who you are first. Go forge your resume!")
         return
 
     col1, col2 = st.columns(2)
     with col1:
-        st.markdown("<div class='zna-card'>", unsafe_allow_html=True)
-        company = st.text_input("Target Entity *", placeholder="e.g. Apple, Google")
-        hiring_manager = st.text_input("Hiring Lead (Optional)")
-        job_desc_context = st.text_area("Job Highlights / JD:", height=100)
+        st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+        company = st.text_input("Target Corporation *", placeholder="e.g. SpaceX, Apple")
+        hiring_manager = st.text_input("Hiring Lead (Optional)", placeholder="Who are we talking to?")
+        job_desc_context = st.text_area("Job Highlights / JD:", height=100, placeholder="Paste the job requirements here...")
         
-        if st.button("✨ Generate Narratives", type="primary"):
+        if st.button("✨ DRAFT MASTERPIECE"):
             if company:
-                with st.spinner("Drafting narrative..."):
+                with st.spinner("AI is ghostwriting your letter..."):
                     prompt = f"Write cover letter. Target Role: {st.session_state['target_job']}. Company: {company}. Manager: {hiring_manager}. JD Context: {job_desc_context}. Candidate Resume: {st.session_state['resume_text']}. Max 300 words. Plain text."
                     st.session_state['cover_letter_output'] = ai.generate_text(prompt)
-            else: st.error("⚠️ Missing Target Entity.")
+                    st.toast("Letter generated!", icon="📝")
+            else: st.error("⚠️ We need a target corporation.")
         st.markdown("</div>", unsafe_allow_html=True)
         
     with col2:
-        st.markdown("<div class='zna-card'>", unsafe_allow_html=True)
+        st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
         if st.session_state['cover_letter_output']:
-            st.text_area("Draft Output", value=st.session_state['cover_letter_output'], height=250)
+            st.text_area("Your Cover Letter:", value=st.session_state['cover_letter_output'], height=250)
             meta = {'name': st.session_state['user_name'], 'email': st.session_state['user_email']}
             pdf_data = pdf.build_resume(st.session_state['cover_letter_output'], meta)
-            st.download_button("📥 Export PDF", data=pdf_data, file_name=f"CoverLetter_{company}.pdf", mime="application/pdf", type="primary")
+            st.download_button("💾 DOWNLOAD PDF", data=pdf_data, file_name=f"CoverLetter_{company}.pdf", mime="application/pdf", type="primary")
         else:
             st.info("Awaiting command...")
         st.markdown("</div>", unsafe_allow_html=True)
 
 def render_ats_scanner(ai: AIService):
-    st.title("🔍 ATS Match Engine")
+    st.title("🔍 ATS Deep Scan")
     col_l, col_r = st.columns(2)
     with col_l:
-        st.markdown("<div class='zna-card'><h4>Active Profile Loaded</h4>", unsafe_allow_html=True)
+        st.markdown("<div class='glass-card'><h4><i class='fas fa-user-shield'></i> Your Active Profile</h4>", unsafe_allow_html=True)
         if st.session_state['resume_text']:
-            st.text_area("", value=st.session_state['resume_text'][:200] + "...\n[Full resume loaded]", height=120, disabled=True)
+            st.text_area("", value=st.session_state['resume_text'][:300] + "...\n[Data Securely Loaded]", height=150, disabled=True)
         else: st.error("⚠️ No Profile Loaded.")
         st.markdown("</div>", unsafe_allow_html=True)
             
     with col_r:
-        st.markdown("<div class='zna-card'><h4>Target Job Description</h4>", unsafe_allow_html=True)
-        job_desc = st.text_area("", height=120, placeholder="Paste Target JD...")
+        st.markdown("<div class='glass-card'><h4><i class='fas fa-briefcase'></i> Target Job Description</h4>", unsafe_allow_html=True)
+        job_desc = st.text_area("", height=150, placeholder="Paste the exact job description here...")
         st.markdown("</div>", unsafe_allow_html=True)
     
-    if st.button("🚀 Initiate Deep Scan", type="primary"):
+    if st.button("🔥 RUN DIAGNOSTIC"):
         if st.session_state['resume_text'] and job_desc:
-            with st.spinner("Analyzing semantic vectors..."):
+            with st.spinner("Scanning semantic vectors..."):
                 prompt = f"Act as an Applicant Tracking System. Resume: {st.session_state['resume_text']}. JD: {job_desc}. Output: 1. Match Score (%) 2. Missing Keywords 3. Recommendation."
                 st.info(ai.generate_text(prompt))
-        else: st.warning("⚠️ Parameters missing.")
+                st.toast("Diagnostic Complete", icon="✅")
+        else: st.warning("⚠️ Cannot run scan without both Profile and JD.")
 
 def render_interview_prep(ai: AIService):
-    st.title("🎙️ Interview Simulator")
+    st.title("🎙️ AI Interview Simulator")
     if not st.session_state['resume_text']:
-        st.error("⚠️ Synthesize a resume first to unlock the Interview Simulator.")
+        st.warning("⚠️ Forge a resume first so the AI knows what to ask you.")
         return
 
-    st.markdown("<div class='zna-card'>", unsafe_allow_html=True)
+    st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
     c1, c2 = st.columns(2)
-    with c1: company = st.text_input("Target Company", placeholder="e.g. Google")
-    with c2: type_ = st.selectbox("Interview Stage",["Behavioral", "Technical", "Executive"])
+    with c1: company = st.text_input("Target Company", placeholder="Where are you interviewing?")
+    with c2: type_ = st.selectbox("Interrogation Level",["Behavioral (Culture Fit)", "Technical (Hard Skills)", "Executive (Final Boss)"])
     
-    if st.button("🎙️ Generate Mock Interview", type="primary"):
-        with st.spinner("Analyzing vectors for probable questions..."):
+    if st.button("🎲 GENERATE SCENARIOS"):
+        with st.spinner("Generating hyper-specific interview questions..."):
             prompt = f"""
             Act as a Senior Recruiter conducting a {type_} interview for {st.session_state['target_job']} at {company or 'a top firm'}.
             Candidate Resume: {st.session_state['resume_text']}
@@ -274,34 +352,35 @@ def render_interview_prep(ai: AIService):
             {{"questions":[{{"number": 1, "question": "...", "situation": "...", "task": "...", "action": "...", "result": "...", "competencies":["Leadership"]}}]}}
             """
             st.session_state['interview_prep_data'] = ai.generate_json(prompt)
+            st.toast("Scenarios Ready!", icon="🎯")
     st.markdown("</div>", unsafe_allow_html=True)
 
     data = st.session_state.get('interview_prep_data')
     if data and "questions" in data:
         for q in data["questions"]:
             st.markdown(f"""
-                <div class='zna-card'>
-                    <h3 style='color: white;'>Q{q.get('number', 1)}: {q.get('question', '')}</h3>
-                    <div style='display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 15px;'>
-                        <div style='background: #050814; padding: 15px; border-radius: 8px;'><b>S:</b> {q.get('situation', '')}</div>
-                        <div style='background: #050814; padding: 15px; border-radius: 8px;'><b>T:</b> {q.get('task', '')}</div>
-                        <div style='background: #050814; padding: 15px; border-radius: 8px;'><b>A:</b> {q.get('action', '')}</div>
-                        <div style='background: #050814; padding: 15px; border-radius: 8px;'><b>R:</b> {q.get('result', '')}</div>
+                <div class='glass-card'>
+                    <h3 style='color: #00f2fe;'>Q{q.get('number', 1)}: {q.get('question', '')}</h3>
+                    <div style='display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 15px; margin-top: 15px;'>
+                        <div style='background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; border-left: 3px solid #4facfe;'><b>S:</b> {q.get('situation', '')}</div>
+                        <div style='background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; border-left: 3px solid #4facfe;'><b>T:</b> {q.get('task', '')}</div>
+                        <div style='background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; border-left: 3px solid #4facfe;'><b>A:</b> {q.get('action', '')}</div>
+                        <div style='background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; border-left: 3px solid #4facfe;'><b>R:</b> {q.get('result', '')}</div>
                     </div>
                 </div>
             """, unsafe_allow_html=True)
 
 def render_skill_gap_analyzer(ai: AIService):
-    st.title("🗺️ Skill Gap & Roadmap")
+    st.title("🗺️ Career Roadmap Generator")
     if not st.session_state['resume_text']:
-        st.error("⚠️ Missing Profile Context! Please build your resume first.")
+        st.warning("⚠️ Forge your resume first so we know where your starting point is.")
         return
 
-    st.markdown("<div class='zna-card'>", unsafe_allow_html=True)
-    dream_job = st.text_input("Your Dream Job / Next Role *", placeholder="e.g. Senior Data Scientist")
-    if st.button("🗺️ Generate Visual Roadmap", type="primary"):
+    st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+    dream_job = st.text_input("Your Ultimate Dream Job *", placeholder="e.g. Chief Technology Officer")
+    if st.button("🗺️ PLOT COURSE"):
         if dream_job:
-            with st.spinner(f"Analyzing gap for {dream_job}..."):
+            with st.spinner(f"Plotting course to {dream_job}..."):
                 prompt = f"""
                 Act as a Career Coach. Resume: {st.session_state['resume_text']}. Dream Job: {dream_job}.
                 Return JSON schema:
@@ -309,19 +388,22 @@ def render_skill_gap_analyzer(ai: AIService):
                 Return exactly 4 weeks.
                 """
                 st.session_state['skill_gap_data'] = ai.generate_json(prompt)
-        else: st.error("⚠️ Please enter your Target Dream Job.")
+                st.toast("Map generated!", icon="🗺️")
+        else: st.error("⚠️ Enter a destination to plot a course.")
     st.markdown("</div>", unsafe_allow_html=True)
         
     data = st.session_state.get('skill_gap_data')
     if data and "missing_skills" in data:
-        st.markdown("<div class='zna-card'><h4>Identified Gaps</h4><p>" + ", ".join(data['missing_skills']) + "</p></div>", unsafe_allow_html=True)
+        st.markdown("<div class='glass-card'><h4 style='color:#00f2fe;'><i class='fas fa-exclamation-triangle'></i> Identified Skill Gaps</h4><p style='font-size: 18px;'>" + " • ".join(data['missing_skills']) + "</p></div>", unsafe_allow_html=True)
         for week in data.get('learning_roadmap', []):
-            items = "".join([f"<li>{item}</li>" for item in week.get('action_items', [])])
+            items = "".join([f"<li style='margin-bottom: 5px;'>{item}</li>" for item in week.get('action_items', [])])
             st.markdown(f"""
-                <div class='zna-card'>
-                    <h4 style='color: #10b981;'>Week {week.get('week_number')}: {week.get('goal')}</h4>
-                    <ul>{items}</ul>
-                    <div style='background: #050814; padding: 10px; border-radius: 8px;'><b>Project:</b> {week.get('milestone_project_title')}</div>
+                <div class='glass-card'>
+                    <h3 style='color: #00f2fe;'>Week {week.get('week_number')}: {week.get('goal')}</h3>
+                    <ul style='font-size: 16px;'>{items}</ul>
+                    <div style='background: rgba(0,242,254,0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(0,242,254,0.3); margin-top: 15px;'>
+                        <b>🏆 Milestone Project:</b> {week.get('milestone_project_title')}
+                    </div>
                 </div>
             """, unsafe_allow_html=True)
 
@@ -341,46 +423,21 @@ def main():
     # ---------------- Sidebar Navigation ----------------
     with st.sidebar:
         st.markdown(
-            "<div style='display: flex; align-items: center; gap: 12px; margin-bottom: 30px;'>"
-            "<div style='background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%); width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; font-size: 20px;'>Z</div>"
-            "<div style='font-size: 22px; font-weight: 800; color: white;'>Elite Studio</div>"
+            "<div style='display: flex; align-items: center; gap: 15px; margin-bottom: 40px;'>"
+            "<div style='background: linear-gradient(45deg, #4facfe, #00f2fe); width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 900; color: black; font-size: 24px; box-shadow: 0 0 15px rgba(0,242,254,0.5);'>Z</div>"
+            "<div style='font-size: 26px; font-weight: 800; color: white;'>Elite Studio</div>"
             "</div>", unsafe_allow_html=True
         )
         
-        app_mode = st.radio("Workspace Navigation",[
-            "📊 Dashboard", 
-            "📄 Resume Builder", 
-            "✉️ Letter Engine", 
-            "🔍 ATS Scanner", 
-            "🎙️ Interview Prep", 
-            "🗺️ Skill Gap Analyzer"
+        app_mode = st.radio("SYSTEM MODULES",[
+            "📊 Command Center", 
+            "📄 AI Resume Forge", 
+            "✉️ Smart Letter Engine", 
+            "🔍 ATS Deep Scan", 
+            "🎙️ Interview Simulator", 
+            "🗺️ Career Roadmap"
         ])
         
         st.markdown("---")
         if st.session_state['target_job']:
-            st.markdown("<div style='color: #475569; font-size: 11px; font-weight: 700; text-transform: uppercase;'>🌐 Direct Apply</div>", unsafe_allow_html=True)
-            job = urllib.parse.quote(st.session_state['target_job'])
-            naukri = st.session_state['target_job'].replace(' ', '-').lower()
-            st.markdown(f"""
-                <a href='https://www.linkedin.com/jobs/search/?keywords={job}' target='_blank' class='side-job-portal' style='background: #0a66c2;'><i class='fab fa-linkedin'></i> LinkedIn ↗</a>
-                <a href='https://in.indeed.com/jobs?q={job}' target='_blank' class='side-job-portal' style='background: #2557a7;'><i class='fas fa-info-circle'></i> Indeed ↗</a>
-                <a href='https://www.naukri.com/{naukri}-jobs' target='_blank' class='side-job-portal' style='background: #0075FF;'><i class='fas fa-briefcase'></i> Naukri ↗</a>
-            """, unsafe_allow_html=True)
-
-    # ---------------- Page Rendering Logic ----------------
-    if app_mode == "📊 Dashboard":
-        render_dashboard()
-    elif app_mode == "📄 Resume Builder":
-        render_resume_builder(ai_service, pdf_service)
-    elif app_mode == "✉️ Letter Engine":
-        render_letter_engine(ai_service, pdf_service)
-    elif app_mode == "🔍 ATS Scanner":
-        render_ats_scanner(ai_service)
-    elif app_mode == "🎙️ Interview Prep":
-        render_interview_prep(ai_service)
-    elif app_mode == "🗺️ Skill Gap Analyzer":
-        render_skill_gap_analyzer(ai_service)
-
-# Python standard trigger
-if __name__ == "__main__":
-    main()
+            st.markdown("<div style='color: #94a3b8; font-size: 12px; font-weight: 800; text-transform: uppercase; margin-bottom:
